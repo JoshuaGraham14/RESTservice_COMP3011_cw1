@@ -9,6 +9,12 @@ def save_token(token):
     with open(TOKEN_FILE, "w") as file:
         file.write(token)
 
+def load_token():
+    if os.path.exists(TOKEN_FILE): #get token from token_file
+        with open(TOKEN_FILE, "r") as file:
+            return file.read().strip() 
+    return None
+
 def register():
     username = input("Enter username: ")
     email = input("Enter email: ")
@@ -39,6 +45,24 @@ def login():
     else:
         print("❌ Login failed:", response.json()) 
 
+def logout(): 
+    token = load_token()
+    if not token: 
+        print("❌ No active session found. Please log in first.")
+        return
+
+    url = f"{BASE_URL}logout/"
+    headers= {"Authorization": f"Token {token}"}
+    
+    response= requests.post(url,headers=headers) 
+
+    if response.status_code == 200: 
+        print("✅ Logged out successfully.")
+        os.remove(TOKEN_FILE)  #Delete token file on logout
+    else:
+        print("❌ Logout failed:", response.json()) 
+
+    
 #----------------------------------
 
 def main():
@@ -47,6 +71,7 @@ def main():
         print("\nOptions:")
         print("1= Register")
         print("2= Login")
+        print("3= Logout")
         print("Any key= Exit")
 
         choice = input("Choose an option: ")
@@ -55,6 +80,8 @@ def main():
             register()
         elif choice == "2":
             login()
+        elif choice == "3":
+            logout()
         else:
             print("Bye!")
             break
