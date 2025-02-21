@@ -1,14 +1,30 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.contrib.auth.models import User
 from .serializers import UserSerializer
 
-class RegisterView(APIView):
+from rest_framework.authtoken.models import Token
+from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.permissions import AllowAny
 
+#Reference: https://www.django-rest-framework.org/tutorial/3-class-based-views/
+class RegisterView(APIView):
     def post(self, request):   #handles POST request
         serializer = UserSerializer(data=request.data) #serializes data into Django User data model
         if serializer.is_valid():
             serializer.save()
             return Response({"message": "User registered successfully"}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+#Reference: https://www.django-rest-framework.org/api-guide/authentication/#tokenauthentication
+#Reference: https://www.youtube.com/watch?v=bLGAKqn_stA
+class LoginView(ObtainAuthToken):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            user = serializer.validated_data['user']
+            token, _ = Token.objects.get_or_create(user=user)
+            return Response({'token': token.key}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

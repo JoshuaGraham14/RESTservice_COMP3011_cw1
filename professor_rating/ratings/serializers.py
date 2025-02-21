@@ -4,6 +4,8 @@ from .models import Professor, Module, ModuleInstance,Rating
 
 # --- Serializes to convery Django models  to json for API responses ---
 
+#Reference: https://www.django-rest-framework.org/tutorial/1-serialization/
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
