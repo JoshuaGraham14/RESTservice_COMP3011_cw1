@@ -25,7 +25,11 @@ class LoginView(ObtainAuthToken):
         serializer = self.serializer_class(data=request.data, context={'request': request})
         if serializer.is_valid():
             user = serializer.validated_data['user']
-            token, _ = Token.objects.get_or_create(user=user)
+
+            #Prevent double login:
+            Token.objects.filter(user=user).delete() #delete our old token (if exists) before creating a new one
+            token, _ = Token.objects.get_or_create(user=user) #create new token
+
             return Response({'token': token.key}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
