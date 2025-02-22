@@ -88,7 +88,29 @@ def list_modules():
     else:
         print("❌ Failed to retrieve module instances.") 
           
-     
+
+def view_professor_ratings():
+    url = f"{BASE_URL}/professors/ratings/"
+    response = requests.get(url)
+
+    if response.status_code == 200: 
+        professors = response.json() 
+        if not professors:
+            print("No professor ratings available.") 
+        else:
+            table_data = []
+            for professor in professors:
+                prof_id = professor["id"]
+                name =professor["name"] 
+                rating= professor["average_rating"] 
+                
+                table_data.append([prof_id, name, rating])
+ 
+            headers = ["ID", "Name","Average Rating"] 
+            print(tabulate(table_data, headers=headers, tablefmt="grid")) 
+    else: 
+        print("❌ Failed to retrieve professor ratings.")
+         
 #----------------------------------
 
 def main():
@@ -106,6 +128,8 @@ def main():
         logout()
     elif command == "list": 
         list_modules()
+    elif command == "view":
+        view_professor_ratings() 
     else: 
         print("❌ Unknown command. Available commands: register, login <url>, logout, list, view, average, rate")
    
