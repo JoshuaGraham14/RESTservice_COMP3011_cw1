@@ -1,9 +1,11 @@
 import requests
 import os
+import sys
+from tabulate import tabulate
 
-BASE_URL = "http://127.0.0.1:8000/api/"  # Change this to your actual API URL when deployed
+BASE_URL = "http://127.0.0.1:8000/api"
 
-TOKEN_FILE = "token.txt"  # Used to store the authentication token
+TOKEN_FILE = "token.txt"
 
 def save_token(token):
     with open(TOKEN_FILE, "w") as file:
@@ -20,7 +22,7 @@ def register():
     email = input("Enter email: ")
     password = input("Enter password: ")
 
-    url = f"{BASE_URL}register/" 
+    url = f"{BASE_URL}/register/" 
     data = {"username": username, "email": email, "password":password} 
 
     response = requests.post(url, json=data) # POST request to the server
@@ -33,7 +35,7 @@ def login():
     username = input("Enter username: ")
     password = input("Enter password: ") 
    
-    url = f"{BASE_URL}login/" 
+    url = f"{BASE_URL}/login/" 
     data = {"username": username, "password":password} 
 
     response = requests.post(url, json=data) 
@@ -51,7 +53,7 @@ def logout():
         print("❌ No active session found. Please log in first.")
         return
 
-    url = f"{BASE_URL}logout/"
+    url = f"{BASE_URL}/logout/"
     headers= {"Authorization": f"Token {token}"}
     
     response= requests.post(url,headers=headers) 
@@ -62,29 +64,51 @@ def logout():
     else:
         print("❌ Logout failed:", response.json()) 
 
-    
+def list_modules():
+    url = f"{BASE_URL}/modules/" 
+    response = requests.get(url) 
+
+    if response.status_code == 200:
+        modules = response.json() 
+        if not modules: 
+            print("No module instances found.")
+        else:
+            table_data = []
+            for module in modules:
+                module_code = module["module"]["id"] 
+                module_name =module["module"]["name"] 
+                year=module["year"] 
+                semester=module["semester"]
+                professors= ", ".join(module["professors"])
+                table_data.append([module_code,module_name,year, semester,professors])
+ 
+            headers = ["Code", "Name","Year","Semester","Taught by"] 
+
+            print(tabulate(table_data, headers=headers, tablefmt="grid"))
+    else:
+        print("❌ Failed to retrieve module instances.") 
+          
+     
 #----------------------------------
 
 def main():
-    print("--- Professor Rating Client Application ---")
-    while True:
-        print("\nOptions:")
-        print("1= Register")
-        print("2= Login")
-        print("3= Logout")
-        print("Any key= Exit")
+    if len(sys.argv) < 2:
+        print("❌ No command provided. Available commands: register, login <url>, logout, list, view, average, rate")
+        return
 
-        choice = input("Choose an option: ")
+    command = sys.argv[1].lower()    
 
-        if choice == "1":
-            register()
-        elif choice == "2":
-            login()
-        elif choice == "3":
-            logout()
-        else:
-            print("Bye!")
-            break
-
+    if command == "register":
+        register() 
+    elif command == "login":
+        login() 
+    elif command == "logout":
+        logout()
+    elif command == "list": 
+        list_modules()
+    else: 
+        print("❌ Unknown command. Available commands: register, login <url>, logout, list, view, average, rate")
+   
 if __name__ == "__main__":
     main()
+

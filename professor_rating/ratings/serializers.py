@@ -37,10 +37,14 @@ class ModuleSerializer(serializers.ModelSerializer):
 
 class ModuleInstanceSerializer(serializers.ModelSerializer):
     module = ModuleSerializer()
+    professors = serializers.SerializerMethodField()  
 
     class Meta:
         model = ModuleInstance
-        fields = ['id','module', 'year', 'semester'] 
+        fields = ['id','module', 'year', 'semester','professors']
+
+    def get_professors(self, obj):
+        return [prof.professor.name for prof in obj.professormodule_set.all()]
  
 
 class RatingSerializer(serializers.ModelSerializer):

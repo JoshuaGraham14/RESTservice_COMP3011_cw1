@@ -7,6 +7,11 @@ from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
+from rest_framework.generics import ListAPIView
+from rest_framework.permissions import AllowAny
+from .models import ModuleInstance
+from .serializers import ModuleInstanceSerializer
+
 #Reference: https://www.django-rest-framework.org/tutorial/3-class-based-views/
 class RegisterView(APIView):
     def post(self, request):   #handles POST request
@@ -43,4 +48,10 @@ class LogoutView (APIView):
             
         except Token.DoesNotExist:
             return Response({"error": "Invalid request"},status=status.HTTP_400_BAD_REQUEST) 
- 
+
+class ModuleInstanceListView(ListAPIView):
+    permission_classes = [AllowAny]
+
+    queryset = ModuleInstance.objects.all()
+    serializer_class = ModuleInstanceSerializer
+    
