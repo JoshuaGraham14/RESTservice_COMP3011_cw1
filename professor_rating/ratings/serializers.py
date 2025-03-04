@@ -28,12 +28,12 @@ class UserSerializer(serializers.ModelSerializer):
 class ProfessorSerializer(serializers.ModelSerializer):
     class Meta: 
         model = Professor
-        fields =['id','name']
+        fields= ['professor_id', 'name']
 
 class ModuleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Module 
-        fields =['id','name']  
+        fields= ['module_code', 'name']
 
 class ModuleInstanceSerializer(serializers.ModelSerializer):
     module = ModuleSerializer()
@@ -43,9 +43,10 @@ class ModuleInstanceSerializer(serializers.ModelSerializer):
         model = ModuleInstance
         fields = ['id','module', 'year', 'semester','professors']
 
+    #Return in good format for client app display...
     def get_professors(self, obj):
-        return [prof.professor.name for prof in obj.professormodule_set.all()]
- 
+        return [f"{prof.professor.name} ({prof.professor.professor_id})" for prof in obj.professormodule_set.all()]
+
 
 class RatingSerializer(serializers.ModelSerializer):
     #Takes the following models as a string instead of ID

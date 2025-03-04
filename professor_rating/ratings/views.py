@@ -9,7 +9,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 
 from .serializers import UserSerializer, ModuleInstanceSerializer, ProfessorSerializer
 
-from .models import ModuleInstance, Professor, Rating
+from .models import ModuleInstance, Professor, Rating, Module
 
 
 from django.db.models import Avg
@@ -73,10 +73,77 @@ class ProfessorRatingsView(APIView):
                 avg_rating = "No ratings yet"
 
             data.append({
-                "id": professor.id,
+                "professor_id": professor.professor_id,
                 "name": professor.name,
                 "average_rating":avg_rating
             })
 
         return Response(data) 
     
+class ProfessorModuleRatingView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, professor_id, module_code):
+        try:
+            #Lookup by professor_id and module code
+            professor =Professor.objects.get(professor_id=professor_id)  
+            module =Module.objects.get(module_code=module_code)
+            #Get all modules instances with this code...
+            module_instances = ModuleInstance.objects.filter(module=module)
+
+            #Calc avg rating of professor across all instances of this module
+            avg_rating = Rating.objects.filter(
+                professor=professor, module_instance__in=module_instances
+            ).aggregate(Avg("rating"))["rating__avg"]
+
+            if avg_rating is None:
+                return Response({"message": "No ratings found for this professor in this module"}, status=status.HTTP_200_OK)
+            avg_rating=round(avg_rating)
+
+            return Response({
+                "professor": professor.name,
+                "module": module.name,
+                "average_rating": avg_rating
+            }, status=status.HTTP_200_OK)
+
+        except Professor.DoesNotExist:
+            return Response({"error": "Professor not found"},status=status.HTTP_404_NOT_FOUND)
+        except Module.DoesNotExist:
+            return Response({"error": "Module not found"},status=status.HTTP_404_NOT_FOUND)
+
+class RateProfessorView(APIView):
+    permission_classes = [IsAuthenticated] #only logged-in users can rate!
+
+    def post(self, request, professor_id, module_code, year, semester):
+        try:
+            #Lookup by professor_id, module_code and 
+            professor= Professor.objects.get(professor_id=professor_id)
+            module =Module.objects.get(module_code=module_code)
+
+            module_instance = ModuleInstance.objects.get(module=module, year=year,semester=semester)
+
+            #Get rating from rquest body
+            rating_value = request.data.get("rating")
+            if rating_value is None or not (1<=int(rating_value)<= 5): 
+                return Response({"error": "Rating must be a number between 1 and 5"},
+                                status=status.HTTP_400_BAD_REQUEST) 
+
+
+            #if user has already rated this professor, then update the rating...
+            rating, created = Rating.objects.update_or_create(
+                user=request.user, professor=professor, module_instance=module_instance,
+                defaults={"rating": rating_value}
+            )
+
+            return Response(
+                {"message": "Rating submitted successfully", "rating": rating_value},
+                status=status.HTTP_201_CREATED if created else status.HTTP_200_OK
+            )
+
+        except Professor.DoesNotExist:
+            return Response({"error": "Professor not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Module.DoesNotExist:
+            return Response({"error": "Module not found"},status=status.HTTP_404_NOT_FOUND)
+        except ModuleInstance.DoesNotExist:
+            return Response({"error": "Module instance not found"},status=status.HTTP_404_NOT_FOUND)
+        
