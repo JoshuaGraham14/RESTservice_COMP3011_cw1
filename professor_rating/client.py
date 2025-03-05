@@ -184,7 +184,7 @@ def main():
             print("Exiting the application... Bye!")
             break 
         else:
-            print("Unknown command. Type 'help' to see available commands.")
+            print("Unknown command. Try again")
 
 if __name__ == "__main__":
     main() 
