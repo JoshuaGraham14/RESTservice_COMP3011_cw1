@@ -24,7 +24,7 @@ db.sqlite3
 # Environment variables & Secrets
 .env
 *.env
-*.json
+# *.json
 *.config
 
 # Logs
