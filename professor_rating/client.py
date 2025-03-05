@@ -1,7 +1,7 @@
 import requests
 from tabulate import tabulate
 
-BASE_URL = "http://127.0.0.1:8000/api"
+BASE_URL = "http://sc21jg.pythonanywhere.com/api"
 
 session = requests.Session()
 
@@ -20,22 +20,29 @@ def register():
     else:
         print("❌ Registration failed:",response.json())
 
-def login():
+def login(url=None):
     username=input("Enter username: ")
     password =input("Enter password: ") 
    
     #Call REST endpoint
-    url=f"{BASE_URL}/login/" 
+    login_url=f"https://{url}/api/login/" 
     data = {"username": username, "password":password} 
 
-    response = session.post(url, json=data) 
+    response = session.post(login_url, json=data) 
     
-    if response.status_code==200: 
-        token = response.json().get("token")   
-        print(f"✅ Login successful!") 
-        session.headers.update({'Authorization': f"Token {token}"})
-    else:
-        print("❌ Login failed:", response.json())  
+    try:
+        response = session.post(login_url, json=data, timeout=5)
+        response.raise_for_status()
+
+        if response.status_code == 200:
+            token = response.json().get("token")
+            print(f"✅ Login successful!")
+            session.headers.update({'Authorization': f"Token {token}"})
+        else:
+            print(f"❌ Login failed: {response.json().get('error', 'Unknown error')}")
+
+    except Exception:
+        print("❌ Network error. Please check your URL.")
    
 def logout(): 
     #Call REST endpoint
@@ -88,23 +95,21 @@ def view_professor_ratings():
             for professor in professors:
                 professor_id = professor["professor_id"]
                 name =professor["name"]  
-                rating=professor["average_rating"]   
+                rating=professor["average_rating"]
 
-                table_data.append([f"{name} ({professor_id})", rating])
+                if rating != "No ratings yet":
+                    rating_display = f"{rating} ⭐"
+                else:
+                    rating_display = rating
+
+                table_data.append([f"{name} ({professor_id})", f"{rating_display}"])
 
             headers= ["Professor", "Average rating"] 
             print(tabulate(table_data, headers=headers,tablefmt="grid")) 
     else: 
         print("❌ Failed to retrieve professor ratings")
 
-def average_professor_rating():
-    professor_id =input("Enter professor ID: ")
-    module_code =input("Enter module code: ")
-
-    if not professor_id or not module_code:
-        print("❌ Both Professor ID and Module Code are required.")
-        return
-    
+def average_professor_rating(professor_id=None, module_code=None):
     #Call REST endpoint
     url=f"{BASE_URL}/professors/{professor_id}/module/{module_code}/rating/"
     response = session.get(url)
@@ -118,24 +123,14 @@ def average_professor_rating():
         print("❌ Failed to retrieve professor rating")
 
 
-def rate_professor(): 
+def rate_professor(professor_id=None, module_code=None, year=None, semester=None, rating=None):
     if "Authorization" not in session.headers:
         print("❌ You must be logged in to rate a professor. Please log in first.")
-        return  
-
-    professor_id = input("Enter professor ID: ").strip()
-    module_code = input("Enter module code: ").strip()
-    year = input("Enter year: ").strip()
-    semester = input("Enter semester: ").strip()
-    rating =input("Enter rating (1-5): ").strip() 
-
-    #Quick validate of user inputs
-    if (not professor_id) or (not module_code) or (not year) or (not semester):
-        print("❌ All fields are required")
         return
+
     if not rating.isdigit() or not (1<=int(rating)<=5):
         print("❌ Rating must be a number between 1 and 5") 
-        return   
+        return 
 
     #Call REST endpoint
     url=f"{BASE_URL}/professors/{professor_id}/module/{module_code}/{year}/{semester}/rate/"
@@ -157,22 +152,34 @@ def main():
     print("Type 'exit' to quit")
  
     while True:
-        command = input("> ").strip().lower()
- 
+        command_input = input("> ").strip()
+        command_parts = command_input.split(" ")
+        command = command_parts[0].lower()
+        args=command_parts[1:]
+
         if command == "register":
-            register() 
+            register()
         elif command == "login":
-            login()
+            if len(args) != 1:
+                print("⛔️ Usage: login <url>")
+            else:
+                login(args[0]) 
         elif command == "logout":
             logout()
         elif command == "list":
             list_modules() 
         elif command == "view":
             view_professor_ratings()
-        elif command == "average": 
-            average_professor_rating()
+        elif command == "average":
+            if len(args) != 2:
+                print("⛔️ Usage: average <professor_id> <module_code>")
+            else:
+                average_professor_rating(args[0], args[1]) 
         elif command == "rate":
-            rate_professor() 
+            if len(args) != 5:
+                print("⛔️ Usage: rate <professor_id> <module_code> <year> <semester> <rating>")
+            else:
+                rate_professor(args[0], args[1], args[2], args[3], args[4])
         elif command == "exit":
             print("Exiting the application... Bye!")
             break 
