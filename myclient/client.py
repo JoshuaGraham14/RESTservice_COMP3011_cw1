@@ -155,7 +155,7 @@ def main():
         command_input = input("> ").strip()
         command_parts = command_input.split(" ")
         command = command_parts[0].lower()
-        args=command_parts[1:]
+        args=command_parts[1:] #gets args (i.e. input after 'command' word)
 
         if command == "register":
             register()
