@@ -1,5 +1,6 @@
-### A RESTful API for Professor Rating
+# A RESTful API for Professor Rating
 
+### Overfview
 This project is a RESTful web service built using Django and Django REST Framework (DRF), allowing students to rate professors on a scale from 1 to 5 for different modules. The service provides a command-line client application for interacting with the API and is deployed on PythonAnywhere.
 
 The system consists of:
