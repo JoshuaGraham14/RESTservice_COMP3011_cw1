@@ -27,12 +27,17 @@ The client runs once and enters a while loop, continuously listening for user in
 •	exit = closes the application.
 
 ## Example Usage
-> login sc21jg.pythonanywhere.com
-> list
-> average JM1 COMP3011
-> rate JM1 COMP3011 2023 2 5
-> logout
-> exit
+\> `login sc21jg.pythonanywhere.com`
+
+\> `list`
+
+\> `average JM1 COMP3011`
+
+\> `rate JM1 COMP3011 2023 2 5`
+
+\> `logout`
+
+\> `exit`
 
 ## PythonAnywhere Domain
 My Professor Rating API is hosted at: https://sc21jg.pythonanywhere.com/
