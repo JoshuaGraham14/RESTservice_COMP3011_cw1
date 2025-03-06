@@ -1,6 +1,5 @@
 # A RESTful API for Professor Rating
 
-### Overfview
 This project is a RESTful web service built using Django and Django REST Framework (DRF), allowing students to rate professors on a scale from 1 to 5 for different modules. The service provides a command-line client application for interacting with the API and is deployed on PythonAnywhere.
 
 The system consists of:
@@ -8,7 +7,7 @@ The system consists of:
 - A REST API that enables students to view professor ratings, list available modules, and submit ratings.
 - A command-line client that provides an intuitive interface for interacting with the API.
 
---- Using the client --- 
+## Using the client
 To use the Professor Rating Client, ensure that Python 3.10 is installed, as well as the following libraries using: 
 -> pip install requests tabulate. 
 
@@ -17,7 +16,7 @@ Then run the client using:
 
 The client runs once and enters a while loop, continuously listening for user input. This allows users to execute multiple commands without restarting the script. The loop is entirely intuitive: it accepts one-line commands with (for some) arguments.
 
---- Available Commands ---
+## Available Commands
 •	register = Registers a new user, prompting input for a username, email, and password.
 •	login <url> = logs in to the API at the inputted url.
 •	logout = logs out the current user
@@ -27,7 +26,7 @@ The client runs once and enters a while loop, continuously listening for user in
 •	rate <professor_id> <module_code> <year> <semester> <rating> = Submits a rating (between 1-5) for a professor for a module.
 •	exit = closes the application.
 
---- Example Usage ---
+## Example Usage
 > login sc21jg.pythonanywhere.com
 > list
 > average JM1 COMP3011
@@ -35,10 +34,10 @@ The client runs once and enters a while loop, continuously listening for user in
 > logout
 > exit
 
---- PythonAnywhere Domain ---
+## PythonAnywhere Domain
 My Professor Rating API is hosted at: https://sc21jg.pythonanywhere.com/
 
---- Admin Login ---
+## Admin Login
 To access the Django Admin site:
 URL: https://sc21jg.pythonanywhere.com/admin/
 Username: joshuagraham
